@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Django Timetable Generator</title>
+    <style>
+        .form-block { border: 1px solid #ccc; padding: 10px; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <h1>Timetable Generator</h1>
+
+    {% if messages %}
+        <ul>
+        {% for message in messages %}
+            <li style="color:red;">{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <fieldset>
+            <legend>Configuration</legend>
+            {{ config_form.as_p }}
+        </fieldset>
+
+        <fieldset>
+            <legend>Subjects</legend>
+            {{ subject_formset.management_form }}
+            <div id="subjects-formset">
+                {% for form in subject_formset %}
+                    <div class="form-block">{{ form.as_p }}</div>
+                {% endfor %}
+            </div>
+            <button type="button" id="add-subject">+ Add Subject</button>
+        </fieldset>
+
+        <fieldset>
+            <legend>Faculty</legend>
+            {{ faculty_formset.management_form }}
+            <div id="faculty-formset">
+                {% for form in faculty_formset %}
+                    <div class="form-block">{{ form.as_p }}</div>
+                {% endfor %}
+            </div>
+            <button type="button" id="add-faculty">+ Add Faculty</button>
+        </fieldset>
+
+        <button type="submit">Generate Timetable</button>
+    </form>
+
+    <script>
+        function addForm(btnId, containerId, prefix) {
+            const addBtn = document.getElementById(btnId);
+            const container = document.getElementById(containerId);
+
+            addBtn.addEventListener("click", function() {
+                const totalForms = document.getElementById("id_" + prefix + "-TOTAL_FORMS");
+                const currentCount = parseInt(totalForms.value);
+
+                const newFormHtml = container.children[0].cloneNode(true);
+                newFormHtml.querySelectorAll("input").forEach(input => {
+                    const name = input.name.replace(prefix + "-0-", prefix + "-" + currentCount + "-");
+                    const id = "id_" + name;
+                    input.name = name;
+                    input.id = id;
+                    input.value = "";
+                });
+
+                container.appendChild(newFormHtml);
+                totalForms.value = currentCount + 1;
+            });
+        }
+
+        addForm("add-subject", "subjects-formset", "subjects");
+        addForm("add-faculty", "faculty-formset", "faculty");
+    </script>
+</body>
+</html>
